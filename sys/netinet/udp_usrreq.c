@@ -408,6 +408,25 @@ udp_input(struct mbuf *m, int off)
 	else
 		memset(&save_ip, 0, sizeof(save_ip));
 
+#ifdef IPSEC_NAT_T
+    /*   
+     * RFC 3948 
+     *    
+     * 3.1.2. Transport Mode Decapsulation NAT Procedure
+     *    
+     * Depending on local policy, one of the following MUST be done:
+     *    
+     * [...]
+     *    
+     * 3.  If the protocol header after the ESP header is a UDP header, set
+     *     the checksum field to zero in the UDP header. [...]
+     */   
+    
+    if (m_tag_find(m, PACKET_TAG_IPSEC_NAT_T_PORTS, NULL) != NULL) {
+        uh->uh_sum = 0; 
+    }    
+#endif
+
 	/*
 	 * Checksum extended UDP header and data.
 	 */
